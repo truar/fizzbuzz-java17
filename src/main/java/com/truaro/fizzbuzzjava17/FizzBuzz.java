@@ -25,41 +25,53 @@ public class FizzBuzz {
         }
     }
 
-    sealed interface FizzBuzzNumber permits MULTIPLE_OF_15, MULTIPLE_OF_3, MULTIPLE_OF_5, NOT_A_MULTIPLE {
+    sealed interface FizzBuzzNumber permits MULTIPLE_OF_15, MULTIPLE_OF_3, MULTIPLE_OF_5, REGULAR {
+
+        String fizzBuzz();
+
         static FizzBuzzNumber from(int number) {
             return fizzBuzzPredicates.stream()
                     .filter(fizzBuzzPredicate -> fizzBuzzPredicate.test(number))
                     .findFirst()
                     .map(FizzBuzzPredicate::get)
-                    .orElseGet(() -> new NOT_A_MULTIPLE(number));
+                    .orElseGet(() -> new REGULAR(number));
         }
 
     }
 
     record MULTIPLE_OF_15() implements FizzBuzzNumber {
-    }
-
-    record MULTIPLE_OF_5() implements FizzBuzzNumber {
+        @Override
+        public String fizzBuzz() {
+            return "fizzbuzz";
+        }
     }
 
     record MULTIPLE_OF_3() implements FizzBuzzNumber {
+
+        @Override
+        public String fizzBuzz() {
+            return "fizz";
+        }
     }
 
-    record NOT_A_MULTIPLE(int number) implements FizzBuzzNumber {
+    record MULTIPLE_OF_5() implements FizzBuzzNumber {
+        @Override
+        public String fizzBuzz() {
+            return "buzz";
+        }
+    }
+
+    record REGULAR(int number) implements FizzBuzzNumber {
+        @Override
+        public String fizzBuzz() {
+            return String.valueOf(number);
+        }
     }
 
     public static List<String> generatesFizzBuzzTo(int inclusiveEnd) {
         return IntStream.rangeClosed(1, inclusiveEnd)
                 .mapToObj(FizzBuzzNumber::from)
-                .map(
-                        fizzBuzzNumber -> switch (fizzBuzzNumber) {
-                            case MULTIPLE_OF_15 value -> "fizzbuzz";
-                            case MULTIPLE_OF_3 value -> "fizz";
-                            case MULTIPLE_OF_5 value -> "buzz";
-                            case NOT_A_MULTIPLE value -> String.valueOf(value.number);
-                        }
-                )
+                .map(FizzBuzzNumber::fizzBuzz)
                 .collect(toList());
     }
-
 }
