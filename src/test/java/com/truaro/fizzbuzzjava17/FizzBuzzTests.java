@@ -1,5 +1,9 @@
 package com.truaro.fizzbuzzjava17;
 
+import com.truaro.fizzbuzzjava17.FizzBuzzTests.MULTIPLE_OF_15;
+import com.truaro.fizzbuzzjava17.FizzBuzzTests.MULTIPLE_OF_3;
+import com.truaro.fizzbuzzjava17.FizzBuzzTests.MULTIPLE_OF_5;
+import com.truaro.fizzbuzzjava17.FizzBuzzTests.NOT_A_MULTIPLE;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -11,19 +15,45 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class FizzBuzzTests {
 
+    sealed interface MULTIPLE_OF permits MULTIPLE_OF_15, MULTIPLE_OF_3, MULTIPLE_OF_5, NOT_A_MULTIPLE {
+    }
+
+    record MULTIPLE_OF_15() implements MULTIPLE_OF {
+    }
+
+    record MULTIPLE_OF_5() implements MULTIPLE_OF {
+    }
+
+    record MULTIPLE_OF_3() implements MULTIPLE_OF {
+    }
+
+    record NOT_A_MULTIPLE(int number) implements MULTIPLE_OF {
+    }
+
+    record FizzBuzzNumber(int i) {
+        public MULTIPLE_OF multipleOf() {
+            if (i % 15 == 0) {
+                return new MULTIPLE_OF_15();
+            } else if (i % 3 == 0) {
+                return new MULTIPLE_OF_3();
+            } else if (i % 5 == 0) {
+                return new MULTIPLE_OF_5();
+            } else {
+                return new NOT_A_MULTIPLE(i);
+            }
+        }
+    }
+
     private static List<String> fizzbuzz(int number) {
         return IntStream.rangeClosed(1, number)
-                .mapToObj(i -> {
-                    if (i % 15 == 0) {
-                        return "fizzbuzz";
-                    } else if (i % 3 == 0) {
-                        return "fizz";
-                    } else if (i % 5 == 0) {
-                        return "buzz";
-                    } else {
-                        return String.valueOf(i);
-                    }
-                })
+                .mapToObj(
+                        i -> switch (new FizzBuzzNumber(i).multipleOf()) {
+                            case MULTIPLE_OF_15 value -> "fizzbuzz";
+                            case MULTIPLE_OF_3 value -> "fizz";
+                            case MULTIPLE_OF_5 value -> "buzz";
+                            case NOT_A_MULTIPLE value -> String.valueOf(value.number);
+                        }
+                )
                 .collect(toList());
     }
 
